@@ -4,6 +4,10 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import Pipeline
 import pandas as pd
 import numpy as np
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier
+from sklearn.preprocessing import LabelEncoder
+from imblearn.combine import SMOTETomek
 
 
 class MyModel:
@@ -12,7 +16,22 @@ class MyModel:
         # Define Model here
         # For Example:
         # self.model = DummyRegressor(strategy = 'constant')
-        pass
+        self.model = self.get_dtc_model()
+
+    def get_dtc_model(self):
+        dtc_clf = DecisionTreeClassifier(
+            min_samples_split=2,
+            min_samples_leaf=1,
+            max_depth=33,
+            criterion='gini',
+            random_state=0,
+        )
+        bagging_clf = BaggingClassifier(
+            estimator=dtc_clf,
+            n_estimators=100,
+            random_state=0,
+        )
+        return dtc_clf
 
     def fit(self, training_data):
         # create training data
