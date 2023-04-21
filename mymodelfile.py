@@ -72,17 +72,27 @@ class MyModel:
 
         self.model.fit(X, y)
 
-        dummy_training_data = pd.DataFrame(data=training_data,
-                                           columns=["venue", "innings", "batting_team",
-                                                    "bowling_team", "batsmen", "bowlers"])
-
-        # train the model
-        self._model.fit(dummy_training_data, dummy_training_labels)
-
-        return self
-
     def predict(self, test_data):
-        x_test = test_data
 
-        # compuate and return predictions
-        return self._model.predict(x_test)
+        batsmen = test_data.loc[0]['batsmen'].split(', ')
+        bowlers = test_data.loc[0]['bowlers'].split(', ')
+
+        inning_one = [(a, b) for a in batsmen for b in bowlers]
+        inning_two = [(a, b) for a in bowlers for b in batsmen]
+
+        inning_one = pd.DataFrame(
+            inning_one, columns=['batter', 'bowler'])
+        inning_two = pd.DataFrame(
+            inning_two, columns=['batter', 'bowler'])
+
+        print(inning_one)
+
+
+test = MyModel()
+
+input = pd.read_csv('training_dataset/DataSet/input_test_file.csv')
+training_data = pd.read_csv(
+    '/home/nailsonseat/Desktop/Data_into_IPL/training_dataset/DataSet/IPL_Ball_by_Ball_2008_2022.csv')
+
+test.fit(training_data)
+test.predict(input)
