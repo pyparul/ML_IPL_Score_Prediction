@@ -90,16 +90,18 @@ class MyModel:
             inning_one, columns=['batter', 'bowler'])
         inning_two = pd.DataFrame(
             inning_two, columns=['batter', 'bowler'])
-        
+
         batter_encoded = pd.DataFrame(
             self.encoding, columns=['player_id', 'batter'])
 
         bowler_encoded = pd.DataFrame(
             self.encoding, columns=['player_id', 'bowler'])
-        
+
         # Encoding for inning one
-        inning_one = pd.merge(inning_one, batter_encoded, on='batter', how = 'left')
-        inning_one = pd.merge(inning_one, bowler_encoded, on='bowler', how = 'left')
+        inning_one = pd.merge(inning_one, batter_encoded,
+                              on='batter', how='left')
+        inning_one = pd.merge(inning_one, bowler_encoded,
+                              on='bowler', how='left')
         inning_one['bowler_encoded'] = inning_one['player_id_y']
         inning_one['batter_encoded'] = inning_one['player_id_x']
 
@@ -107,8 +109,10 @@ class MyModel:
         #print(inning_one)
 
         # Encoding for inning two
-        inning_two = pd.merge(inning_two, batter_encoded, on='batter', how = 'left')
-        inning_two = pd.merge(inning_two, bowler_encoded, on='bowler', how = 'left')
+        inning_two = pd.merge(inning_two, batter_encoded,
+                              on='batter', how='left')
+        inning_two = pd.merge(inning_two, bowler_encoded,
+                              on='bowler', how='left')
         inning_two['bowler_encoded'] = inning_two['player_id_y']
         inning_two['batter_encoded'] = inning_two['player_id_x']
 
@@ -135,9 +139,9 @@ class MyModel:
 
 test = MyModel()
 
-input = pd.read_csv('training_dataset\DataSet\input_test_file.csv')
+input = pd.read_csv('training_dataset/DataSet/input_test_file.csv')
 training_data = pd.read_csv(
-    'training_dataset\DataSet\IPL_Ball_by_Ball_2008_2022.csv')
+    'training_dataset/DataSet/IPL_Ball_by_Ball_2008_2022.csv')
 
 test.fit(training_data)
 test.predict(input)
