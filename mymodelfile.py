@@ -84,15 +84,46 @@ class MyModel:
             inning_one, columns=['batter', 'bowler'])
         inning_two = pd.DataFrame(
             inning_two, columns=['batter', 'bowler'])
+        
+        batter_encoded = pd.DataFrame(
+            self.encoding, columns=['player_id', 'batter'])
 
-        print(inning_one)
+        bowler_encoded = pd.DataFrame(
+            self.encoding, columns=['player_id', 'bowler'])
+        
+        # Encoding for inning one
+        inning_one = pd.merge(inning_one, batter_encoded, on='batter', how = 'left')
+        inning_one = pd.merge(inning_one, bowler_encoded, on='bowler', how = 'left')
+        inning_one['bowler_encoded'] = inning_one['player_id_y']
+        inning_one['batter_encoded'] = inning_one['player_id_x']
+
+        inning_one = inning_one[['batter_encoded', 'bowler_encoded']]
+
+        # Encoding for inning two
+        inning_two = pd.merge(inning_two, batter_encoded, on='batter', how = 'left')
+        inning_two = pd.merge(inning_two, bowler_encoded, on='bowler', how = 'left')
+        inning_two['bowler_encoded'] = inning_two['player_id_y']
+        inning_two['batter_encoded'] = inning_two['player_id_x']
+
+        inning_two = inning_two[['batter_encoded', 'bowler_encoded']]
+        
+        prediction_inning_one = ((self.model.predict(inning_one)).mean())*36
+        prediction_inning_two = ((self.model.predict(inning_two)).mean())*36
+
+        # Creating output dataframe
+        data = [('0', prediction_inning_one), ('1', prediction_inning_two)]
+
+        df = pd.DataFrame(data, columns=['id', 'predicted_runs'])
+
+        # save the DataFrame to a CSV file
+        return df.to_csv('prediction.csv', index=False)
 
 
 test = MyModel()
 
-input = pd.read_csv('training_dataset/DataSet/input_test_file.csv')
+input = pd.read_csv('training_dataset\DataSet\input_test_file.csv')
 training_data = pd.read_csv(
-    '/home/nailsonseat/Desktop/Data_into_IPL/training_dataset/DataSet/IPL_Ball_by_Ball_2008_2022.csv')
+    'training_dataset\DataSet\IPL_Ball_by_Ball_2008_2022.csv')
 
 test.fit(training_data)
 test.predict(input)
