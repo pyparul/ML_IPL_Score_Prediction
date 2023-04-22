@@ -8,6 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn.preprocessing import LabelEncoder
 from imblearn.combine import SMOTETomek
+from sklearn.utils.class_weight import compute_class_weight
 
 
 class MyModel:
@@ -24,7 +25,7 @@ class MyModel:
             min_samples_leaf=1,
             max_depth=33,
             criterion='gini',
-            random_state=0,
+            random_state=0
         )
         bagging_clf = BaggingClassifier(
             estimator=dtc_clf,
@@ -65,10 +66,15 @@ class MyModel:
         sampler = SMOTETomek(random_state=0)
         X_resampled, y_resampled = sampler.fit_resample(X_le, y)
 
+        arr = compute_class_weight('balanced', classes = np.unique(y), y = y)
+        keys = list(np.unique(y)) 
+        class_weight = dict(zip(keys, arr))
+        self.model.set_params(class_weight = class_weight)
+
         return X_resampled, y_resampled
 
     def fit(self, training_data):
-        X, y = self.preprocessing(training_data)
+        X, y= self.preprocessing(training_data)
 
         self.model.fit(X, y)
 
@@ -98,6 +104,7 @@ class MyModel:
         inning_one['batter_encoded'] = inning_one['player_id_x']
 
         inning_one = inning_one[['batter_encoded', 'bowler_encoded']]
+        #print(inning_one)
 
         # Encoding for inning two
         inning_two = pd.merge(inning_two, batter_encoded, on='batter', how = 'left')
@@ -106,12 +113,19 @@ class MyModel:
         inning_two['batter_encoded'] = inning_two['player_id_x']
 
         inning_two = inning_two[['batter_encoded', 'bowler_encoded']]
-        
-        prediction_inning_one = ((self.model.predict(inning_one)).mean())*36
-        prediction_inning_two = ((self.model.predict(inning_two)).mean())*36
+
+        inning_one_prediction_per_pair = np.sum((self.model.predict_proba(inning_one) > 0.15).astype(int), axis = 1)
+        inning_one_score = np.sum((self.model.predict_proba(inning_one) > 0.15).astype(int), axis = 1).mean()*36
+        print('runs per pair of MI', inning_one_prediction_per_pair)
+        print('score of MI', inning_one_score)
+
+        inning_two_prediction_per_pair = np.sum((self.model.predict_proba(inning_two) > 0.15).astype(int), axis = 1)
+        inning_two_score = np.sum((self.model.predict_proba(inning_two) > 0.15).astype(int), axis = 1).mean()*36
+        print('runs per pair of KKR', inning_two_prediction_per_pair)
+        print('score of KKR', inning_two_score)
 
         # Creating output dataframe
-        data = [('0', prediction_inning_one), ('1', prediction_inning_two)]
+        data = [('0', inning_one_score), ('1', inning_two_score)]
 
         df = pd.DataFrame(data, columns=['id', 'predicted_runs'])
 
