@@ -66,10 +66,12 @@ class MyModel:
         sampler = SMOTETomek(random_state=0)
         X_resampled, y_resampled = sampler.fit_resample(X_le, y)
 
-        arr = compute_class_weight('balanced', classes = np.unique(y), y = y)
-        keys = list(np.unique(y)) 
-        class_weight = dict(zip(keys, arr))
-        self.model.set_params(class_weight = class_weight)
+        # Setting weights for each class
+        weights_raw = compute_class_weight(
+            'balanced', classes=np.unique(y), y=y)
+        keys = list(np.unique(y))
+        class_weight = dict(zip(keys, weights_raw))
+        self.model.set_params(class_weight=class_weight)
 
         return X_resampled, y_resampled
 
